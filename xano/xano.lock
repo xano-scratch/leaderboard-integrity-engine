@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "objects": {
+    "app:audit": {
+      "guid": "cad4174a6426a42a1e453b38ee821110",
+      "canonical": "audit",
+      "canonical_source": "code"
+    },
+    "app:auth": {
+      "guid": "4fe67f5a2d319eaaca7996700f27edd8",
+      "canonical": "authn",
+      "canonical_source": "code"
+    },
+    "app:leaderboard": {
+      "guid": "67d3eab88a1878f6aadbc82e47088853",
+      "canonical": "leaderboard",
+      "canonical_source": "code"
+    },
+    "app:players": {
+      "guid": "a3481d44faf9aea91585a30996c83947",
+      "canonical": "players",
+      "canonical_source": "code"
+    },
+    "app:rulesets": {
+      "guid": "08c1bc037b25e9b2e887611b3b80ccb9",
+      "canonical": "rulesets",
+      "canonical_source": "code"
+    },
+    "app:scoring": {
+      "guid": "fd437bea461f27f1c629bf7af4b84e3c",
+      "canonical": "scoring",
+      "canonical_source": "code"
+    },
+    "app:seed": {
+      "guid": "7110fabc369b25f0581044e47d499906",
+      "canonical": "seed",
+      "canonical_source": "code"
+    },
+    "dbo:admins": {
+      "guid": "ce424268683f024711dc8673bc6e318a"
+    },
+    "dbo:audit_log": {
+      "guid": "1b71dcef19b2eeb1855a87ace88ef1a0"
+    },
+    "dbo:leaderboard_entries": {
+      "guid": "9116581e98f53e6fb01f24448045b819"
+    },
+    "dbo:players": {
+      "guid": "28b6dc06e4a5a749949999ebdf052eb5"
+    },
+    "dbo:score_submissions": {
+      "guid": "3994c69351f968f500344ddf46c13e0c"
+    },
+    "dbo:scoring_rulesets": {
+      "guid": "354ae06345aad234fbfe4c660b53bf29"
+    },
+    "function:decide_score": {
+      "guid": "6565052b06620f54ba30bd3d212d6763"
+    },
+    "query:audit|GET|submissions": {
+      "guid": "9256ace341212295ae641988abfafdb7"
+    },
+    "query:auth|POST|login": {
+      "guid": "d39d74f907baeb484e9c93358362998a"
+    },
+    "query:leaderboard|GET|rankings": {
+      "guid": "837ea55786d3c6e028ae5c207b7bbb7f"
+    },
+    "query:players|GET|roster": {
+      "guid": "0bcbb7ed1885366ad3fc9e92b0f77df8"
+    },
+    "query:rulesets|GET|active": {
+      "guid": "5e39d817be30488d53af35a5cb08bd0b"
+    },
+    "query:rulesets|GET|list": {
+      "guid": "8d1d0a40c08ab62dee80d4f706612449"
+    },
+    "query:rulesets|POST|publish": {
+      "guid": "1518fd0b64b9f4b549e0d3f2f381a063"
+    },
+    "query:scoring|GET|decision": {
+      "guid": "28b1a98256eb63f1460a02fdc7e18579"
+    },
+    "query:scoring|POST|submit": {
+      "guid": "561a908c320e5a9dae8d4057287cfc0c"
+    },
+    "query:seed|POST|run": {
+      "guid": "648d04bea4597ffab24de8eee9eb3bd2"
+    }
+  }
+}

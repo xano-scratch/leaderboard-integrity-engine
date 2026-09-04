@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard Integrity Engine, a governed Xano scoring API</title>
+    <meta
+      name="description"
+      content="One governed scoring API every channel calls. A versioned rule set decides accept, flag, or reject, names the rule that fired, and writes an audit row. A Xano Play 1 proof artifact."
+    />
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --panel: #12121a;
+        --panel-2: #16161f;
+        --border: #262633;
+        --fg: #ededf2;
+        --muted: #a0a0b0;
+        --primary: #7c7cf0;
+        --primary-fg: #ffffff;
+        --emerald: #34d399;
+        --amber: #fbbf24;
+        --rose: #fb7185;
+        --radius: 14px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 600px at 50% -10%, #1a1a2e 0%, var(--bg) 55%);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; }
+      .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+      .badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid var(--border); border-radius: 999px;
+        padding: 5px 12px; font-size: 13px; color: var(--muted);
+        background: rgba(124, 124, 240, 0.06);
+      }
+      .badge.play { color: #b6b6fb; border-color: rgba(124, 124, 240, 0.35); }
+
+      header.hero { padding: 80px 0 40px; }
+      .logo {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(124, 124, 240, 0.15); color: var(--primary);
+        margin-bottom: 22px;
+      }
+      h1 { font-size: 44px; line-height: 1.1; margin: 0 0 14px; letter-spacing: -0.02em; }
+      .tagline { font-size: 20px; color: var(--muted); max-width: 760px; margin: 0 0 22px; }
+      .meta {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 14px; color: var(--muted); margin: 18px 0 22px;
+        letter-spacing: 0.02em;
+      }
+      .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 22px; border-radius: 10px; font-weight: 600; font-size: 15px;
+        text-decoration: none; transition: transform 0.05s ease, background 0.15s ease, border 0.15s ease;
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn.primary { background: var(--primary); color: var(--primary-fg); border: 1px solid var(--primary); }
+      .btn.primary:hover { background: #8f8ff5; }
+      .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+      .btn.ghost:hover { border-color: var(--primary); }
+
+      .shot {
+        margin: 46px 0 10px; border: 1px solid var(--border); border-radius: var(--radius);
+        overflow: hidden; box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+        background: var(--panel);
+      }
+      .shot img { display: block; width: 100%; height: auto; }
+      .shot-cap { font-size: 13px; color: var(--muted); padding: 12px 16px; border-top: 1px solid var(--border); }
+
+      section { padding: 46px 0; border-top: 1px solid var(--border); }
+      section:first-of-type { border-top: none; }
+      h2 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
+      .lead { color: var(--muted); max-width: 780px; margin: 0 0 26px; }
+
+      .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .card {
+        background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 20px 22px;
+      }
+      .card h3 { margin: 0 0 6px; font-size: 17px; }
+      .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+      .rules { display: grid; gap: 10px; counter-reset: rule; }
+      .rule {
+        display: flex; gap: 14px; align-items: flex-start;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;
+      }
+      .rule .n {
+        flex: none; width: 26px; height: 26px; border-radius: 8px; font-size: 13px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(124, 124, 240, 0.15); color: var(--primary);
+      }
+      .rule code { color: #c9c9fb; }
+      .rule .txt { color: var(--muted); font-size: 15px; }
+      .rule .txt b { color: var(--fg); font-weight: 600; }
+
+      table.api { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      table.api th, table.api td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      table.api th { color: var(--muted); font-weight: 600; }
+      table.api td.verb { font-family: ui-monospace, monospace; font-weight: 700; color: var(--primary); white-space: nowrap; }
+      table.api td.path { font-family: ui-monospace, monospace; color: #c9c9fb; white-space: nowrap; }
+      table.api td.enf { color: var(--muted); }
+      .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-left: 6px; }
+      .tag.rbac { background: rgba(251, 113, 133, 0.12); color: var(--rose); }
+
+      pre {
+        background: #0d0d14; border: 1px solid var(--border); border-radius: 12px;
+        padding: 18px 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.7;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #d6d6e6;
+      }
+      pre .c { color: #6b6b80; }
+      .note {
+        margin-top: 18px; padding: 14px 18px; border-radius: 12px;
+        background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.25);
+        color: #d9c48a; font-size: 14px;
+      }
+      footer { padding: 40px 0 70px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+      @media (max-width: 720px) {
+        h1 { font-size: 34px; }
+        .grid { grid-template-columns: 1fr; }
+        header.hero { padding: 56px 0 30px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+          </svg>
+        </div>
+        <h1>Leaderboard Integrity Engine</h1>
+        <p class="tagline">
+          One governed scoring API that every client, service, and tool calls to submit a player score.
+          A single versioned rule set decides accept, flag, or reject, names the exact rule that fired, and
+          writes an audit row. So every channel scores the same way, and no client can seat a bad score on the board.
+        </p>
+        <span class="badge play">Play 1 · Business Logic Centralization</span>
+        <span class="badge">Competitive gaming platform</span>
+        <div class="meta">6 tables · 10 APIs · 1 function</div>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://github.com/xano-scratch/leaderboard-integrity-engine">View on GitHub</a>
+          <a class="btn ghost" href="#use">Use this template</a>
+        </div>
+
+        <figure class="shot">
+          <img src="screenshot.png" alt="The audit trail screen: a decision table where each row shows the player, channel, decision badge, the exact rule that fired, and the ruleset version." />
+          <figcaption class="shot-cap">
+            The audit trail: one append-only row per decision, with the fired rule and the ruleset version. The regulator-readable record.
+          </figcaption>
+        </figure>
+      </header>
+
+      <section>
+        <h2>What it demonstrates</h2>
+        <p class="lead">
+          Score validation rules usually live scattered across each client build and each backend service.
+          When two channels drift, a cheated score can slip onto the board. This app pulls those rules into
+          one governed API layer. Every submission runs through a single versioned rule set, so every channel
+          decides the same way, and every decision traces back to the exact rule and the version that produced it.
+        </p>
+        <div class="rules">
+          <div class="rule"><span class="n">1</span><span class="txt"><code>banned_account</code>: <b>reject</b> a banned player before scoring.</span></div>
+          <div class="rule"><span class="n">2</span><span class="txt"><code>score_bounds</code>: <b>reject</b> a score outside the allowed range.</span></div>
+          <div class="rule"><span class="n">3</span><span class="txt"><code>rate_limit</code>: <b>flag</b> a player over the per-hour submission cap.</span></div>
+          <div class="rule"><span class="n">4</span><span class="txt"><code>replay_consistency</code>: <b>flag</b> a score whose points per second exceed the ceiling.</span></div>
+          <div class="rule"><span class="n">5</span><span class="txt">Otherwise <b>accept</b>, and seat one leaderboard entry.</span></div>
+        </div>
+        <div class="note">
+          Auth is API-layer role-based access control (RBAC), not row-level security. The audit and publish
+          endpoints refuse a request with no valid admin token, and publishing a rule set is limited to the
+          steward role. A scratch proof artifact that runs on seed data, not a production reference.
+        </div>
+      </section>
+
+      <section>
+        <h2>The screens</h2>
+        <p class="lead">A React and Vite frontend that derives every request path and type from the backend defs (the one contract).</p>
+        <div class="grid">
+          <div class="card"><h3>Submit &amp; Decide console</h3><p>Pick a player and channel, enter a score, and see the live verdict: the decision badge, the deciding rule, the ruleset version, and the reason, beside the rule set in force.</p></div>
+          <div class="card"><h3>Leaderboard</h3><p>The ranked board, accepted scores only, with a region filter. Cheated submissions never appear here, because only accepted entries exist in the table.</p></div>
+          <div class="card"><h3>Audit trail</h3><p>The append-only decision log, filterable by decision or player, each row expandable to the fired rule and version. Admin gated.</p></div>
+          <div class="card"><h3>Rule sets</h3><p>The active rule set and the full version history, with a steward-only publish form that re-arms the whole engine at once.</p></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>API surface</h2>
+        <p class="lead">Seven API groups, ten endpoints. One shared function holds the ordered rules, so every channel scores the same way.</p>
+        <table class="api">
+          <thead><tr><th>Verb</th><th>Path</th><th>What it enforces</th></tr></thead>
+          <tbody>
+            <tr><td class="verb">POST</td><td class="path">/api:scoring/submit</td><td class="enf">Runs the active rule set, writes the submission and an audit row, seats a leaderboard entry only on accept. Open to any channel.</td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:scoring/decision</td><td class="enf">The decision, fired rule, version, and reason for one submission.</td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:leaderboard/rankings</td><td class="enf">The ranked board (accepted only), with an optional server-side region filter.</td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:audit/submissions</td><td class="enf">The append-only decision log, enriched with player and channel.<span class="tag rbac">admin token</span></td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:rulesets/active</td><td class="enf">The rule set currently in force.</td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:rulesets/list</td><td class="enf">The full version history.</td></tr>
+            <tr><td class="verb">POST</td><td class="path">/api:rulesets/publish</td><td class="enf">Publishes a new active version and retires the prior one.<span class="tag rbac">steward role</span></td></tr>
+            <tr><td class="verb">GET</td><td class="path">/api:players/roster</td><td class="enf">Players and their status.</td></tr>
+            <tr><td class="verb">POST</td><td class="path">/api:authn/login</td><td class="enf">Admin login. Issues an auth token.</td></tr>
+            <tr><td class="verb">POST</td><td class="path">/api:seed/run</td><td class="enf">Resets and re-seeds sample submissions through the real engine.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="use">
+        <h2>Use this template</h2>
+        <p class="lead">Clone it and stand up your own live copy in about a minute. Every screen and endpoint is real, and the ephemeral re-seeds itself on each deploy.</p>
+        <pre><span class="c"># clone, install, authenticate once, deploy</span>
+git clone https://github.com/xano-scratch/leaderboard-integrity-engine
+cd leaderboard-integrity-engine
+npm install
+npx xanots login
+npm run xano:deploy   <span class="c"># builds the frontend, deploys the backend, prints the live URL</span></pre>
+        <p class="lead" style="margin-top:22px">Or hand this prompt to a Xano-aware coding agent:</p>
+        <pre>Start from the Xano template at
+https://github.com/xano-scratch/leaderboard-integrity-engine
+Clone it, run npm install, then npx xanots login and npm run xano:deploy
+to stand up a live copy. Then adapt the ordered rules in
+xano/functions/decide.ts and the tables under xano/tables to my domain.</pre>
+        <div class="note">
+          The live links in a build summary are ephemeral and may have expired. The durable artifact is this
+          repo. Anyone can re-deploy it with <code>npm run xano:deploy</code> for fresh links.
+        </div>
+      </section>
+
+      <footer>
+        <div class="wrap" style="padding:0">
+          Leaderboard Integrity Engine · a Xano proof artifact for Business Logic Centralization ·
+          built with <a href="https://www.npmjs.com/package/@xanots/sdk" style="color:var(--primary)">@xanots/sdk</a>.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

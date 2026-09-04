@@ -1,0 +1,4 @@
+[
+  { "email": "steward@studio.test", "password": "steward123", "name": "Sam Steward", "role": "steward" },
+  { "email": "viewer@studio.test", "password": "viewer123", "name": "Val Viewer", "role": "viewer" }
+]
